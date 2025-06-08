@@ -41,6 +41,8 @@ jobs:
         python -m ipykernel install --user --name=python3 --display-name="Python 3"
 
     - name: Run tests
+      env:
+        SCIPY_ARRAY_API: 1
       run: |
         # Data generation and notebook execution are now handled by pytest fixture
         # Run the correct test script (ensure it matches the downloaded name)
