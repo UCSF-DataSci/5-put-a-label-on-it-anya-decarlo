@@ -71,12 +71,22 @@ def synthetic_data():
 def run_notebooks_once(request):
     """Fixture to run data generation and execute notebooks once per session."""
     print("\n--- Running Pre-Test Setup ---")
-    data_path = Path("data/synthetic_health_data.csv")
-    generate_script = "generate_data.py"
+    
+    # Set the SCIPY_ARRAY_API environment variable needed for imbalanced-learn
+    os.environ["SCIPY_ARRAY_API"] = "1"
+    
+    # Get root directory path
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+    
+    # Set proper paths
+    data_path = Path(os.path.join(root_dir, "data/synthetic_health_data.csv"))
+    generate_script = os.path.join(root_dir, "generate_data.py")
+    
+    # Use absolute paths for notebooks
     notebooks_to_run = [
-        'part1_introduction.ipynb',
-        'part2_feature_engineering.ipynb',
-        'part3_data_preparation.ipynb'
+        os.path.join(root_dir, 'part1_introduction.ipynb'),
+        os.path.join(root_dir, 'part2_feature_engineering.ipynb'),
+        os.path.join(root_dir, 'part3_data_preparation.ipynb')
     ]
 
     # 1. Generate data if it doesn't exist
@@ -85,7 +95,10 @@ def run_notebooks_once(request):
         try:
             # Ensure necessary packages for the script are available in the test env
             # Note: The workflow installs pandas/numpy, but local runs might need them
-            result = subprocess.run(["python", generate_script], capture_output=True, text=True, check=True)
+            # Use path relative to repo root, not test directory
+            root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+            script_path = os.path.join(root_dir, generate_script)
+            result = subprocess.run(["python", script_path], capture_output=True, text=True, check=True)
             print(f"Data generation script output:\n{result.stdout}")
             if not data_path.is_file():
                  pytest.fail(f"Script {generate_script} ran but did not create {data_path}")
@@ -101,9 +114,15 @@ def run_notebooks_once(request):
     # 2. Execute notebooks
     print("Executing notebooks...")
     execution_errors = []
+    # Get absolute path to root directory
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+    os.chdir(root_dir)  # Change to root directory for notebook execution
+    
     for nb_path_str in notebooks_to_run:
+        # Since we're now using absolute paths, just check if it exists directly
         nb_path = Path(nb_path_str)
-        if not nb_path.is_file():
+        
+        if not nb_path.exists():
             print(f"Warning: Notebook '{nb_path}' not found, skipping execution.")
             continue
 

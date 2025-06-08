@@ -264,8 +264,15 @@ def save_results_part2(comparison_results, output_file='results/results_part2.tx
     # Create results directory if it doesn't exist
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     
-    # Format the results
+    # Create test-compatible version with only simple numeric values
     with open(output_file, 'w') as f:
+        f.write(f"rf_auc: {comparison_results['random_forest_auc']:.4f}\n")
+        f.write(f"xgb_auc: {comparison_results['xgboost_auc']:.4f}\n")
+        f.write(f"improvement_percent: {comparison_results['improvement_percent']:.2f}\n")
+    
+    # Create human-readable formatted version
+    formatted_output_file = output_file.replace('.txt', '_formatted.txt')
+    with open(formatted_output_file, 'w') as f:
         f.write("Tree-Based Model Comparison Results\n")
         f.write("=================================\n\n")
         f.write(f"Random Forest AUC: {comparison_results['random_forest_auc']:.4f}\n")
@@ -276,7 +283,7 @@ def save_results_part2(comparison_results, output_file='results/results_part2.tx
         f.write("These results incorporate time-series features from heart rate data,\n")
         f.write("which may provide predictive signals beyond static measurements.\n")
     
-    print(f"Results saved to {output_file}")
+    print(f"Results saved to {output_file} (test format) and {formatted_output_file} (human-readable)")
     return output_file
 
 # Main execution

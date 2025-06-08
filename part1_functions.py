@@ -14,7 +14,7 @@ def load_data(file_path):
         file_path: Path to the CSV file
         
     Returns:
-        DataFrame containing the data
+        DataFrame containing the data with timestamp column converted to datetime
     """
     # Check if file exists
     if not os.path.exists(file_path):
@@ -22,6 +22,11 @@ def load_data(file_path):
     
     # Load the CSV file using pandas
     df = pd.read_csv(file_path)
+    
+    # Convert timestamp column to datetime if it exists
+    if 'timestamp' in df.columns:
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        print(f"Converted timestamp column to datetime format")
     
     print(f"Data loaded successfully: {df.shape[0]} rows, {df.shape[1]} columns")
     return df
@@ -153,8 +158,13 @@ def save_results(metrics, output_file='results/results_part1.txt'):
     # 1. Create results directory if it doesn't exist
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     
-    # 2. Format metrics as strings for output
-    with open(output_file, 'w') as f:
+    # 2. Create two versions of the output:
+    # - A human-readable version with full formatting
+    # - A test-compatible version with simple key:value pairs
+    
+    # Create the full formatted version for humans to read
+    formatted_output_file = output_file.replace('.txt', '_formatted.txt')
+    with open(formatted_output_file, 'w') as f:
         f.write("Classification Model Evaluation Metrics\n")
         f.write("====================================\n\n")
         
@@ -170,6 +180,12 @@ def save_results(metrics, output_file='results/results_part1.txt'):
         f.write("              Negative  Positive\n")
         f.write(f"Actual: Negative  {cm[0][0]:8d}  {cm[0][1]:8d}\n")
         f.write(f"        Positive  {cm[1][0]:8d}  {cm[1][1]:8d}\n")
+    
+    # Create the simple version for tests that expect key:value pairs
+    with open(output_file, 'w') as f:
+        for metric_name, value in metrics.items():
+            if metric_name != 'confusion_matrix':
+                f.write(f"{metric_name}: {value:.4f}\n")
     
     # Also save as JSON for easier programmatic comparison
     import json
@@ -190,7 +206,7 @@ def save_results(metrics, output_file='results/results_part1.txt'):
     with open(json_output_file, 'w') as f:
         json.dump(metrics_for_json, f)
     
-    print(f"Results saved to {output_file} and {json_output_file}")
+    print(f"Results saved to {output_file} (test format) and {formatted_output_file} (human-readable)")
     return output_file
 
 def interpret_results(metrics):

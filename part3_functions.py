@@ -235,22 +235,26 @@ def save_results_part3(metrics, output_file='results/results_part3.txt'):
     # 1. Create results directory if it doesn't exist
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     
-    # 2. Format metrics as strings
+    # 2. Create test-compatible version with simple key-value pairs
     with open(output_file, 'w') as f:
+        for metric_name, value in metrics.items():
+            if metric_name != 'confusion_matrix':
+                f.write(f"{metric_name}: {value:.4f}\n")
+    
+    # Create human-readable formatted version
+    formatted_output_file = output_file.replace('.txt', '_formatted.txt')
+    with open(formatted_output_file, 'w') as f:
         f.write("SMOTE & Categorical Features Model Results\n")
         f.write("=====================================\n\n")
         
-        # Write metrics (excluding confusion matrix)
         f.write("Classification Metrics:\n")
         for metric_name, value in metrics.items():
             if metric_name != 'confusion_matrix':
                 f.write(f"{metric_name}: {value:.4f}\n")
         
-        # Write confusion matrix
         f.write("\nConfusion Matrix:\n")
         f.write(f"{metrics['confusion_matrix']}\n\n")
         
-        # Write notes about SMOTE and categorical features
         f.write("Notes:\n")
         f.write("1. This model was trained on balanced data using SMOTE oversampling.\n")
         f.write("2. Categorical features (smoker_status) were encoded using OneHotEncoder.\n")
@@ -262,7 +266,7 @@ def save_results_part3(metrics, output_file='results/results_part3.txt'):
     with open(output_file.replace('.txt', '.json'), 'w') as f:
         json.dump(metrics_for_json, f)
     
-    print(f"\nResults saved to {output_file}")
+    print(f"\nResults saved to {output_file} (test format) and {formatted_output_file} (human-readable)")
     return output_file
 
 def compare_models(part1_metrics, part3_metrics):
