@@ -1,5 +1,4 @@
 name: Grading Workflow - Assignment 5
-# Updated workflow with environment variables
 
 on:
   push:
