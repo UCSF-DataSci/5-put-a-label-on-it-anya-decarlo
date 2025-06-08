@@ -43,7 +43,7 @@ jobs:
 
     - name: Run tests
       env:
-        SCIPY_ARRAY_API: 1
+        SCIPY_ARRAY_API: "1"
       run: |
         # Data generation and notebook execution are now handled by pytest fixture
         # Run the correct test script (ensure it matches the downloaded name)
