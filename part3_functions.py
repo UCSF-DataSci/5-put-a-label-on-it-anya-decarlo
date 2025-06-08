@@ -34,16 +34,18 @@ def load_data(file_path):
     
     return df
 
-def encode_categorical_features(df, column_to_encode='smoker_status'):
+def encode_categorical_features(df, column_to_encode='smoker_status', return_encoder=False):
     """
-    Encode a categorical column using OneHotEncoder.
+    One-hot encode a categorical feature.
     
     Args:
         df: Input DataFrame
         column_to_encode: Name of the categorical column to encode
+        return_encoder: If True, returns both the DataFrame and encoder as tuple; otherwise just DataFrame
         
     Returns:
         DataFrame with the categorical column replaced by one-hot encoded columns
+        or tuple: (DataFrame, OneHotEncoder) if return_encoder=True
     """
     # Make a copy to avoid modifying the original dataframe
     result_df = df.copy()
@@ -72,7 +74,10 @@ def encode_categorical_features(df, column_to_encode='smoker_status'):
     
     print(f"Encoded '{column_to_encode}' into features: {', '.join(encoded_feature_names)}")
     
-    return result_df
+    if return_encoder:
+        return result_df, encoder
+    else:
+        return result_df
 
 def prepare_data_part3(df, test_size=0.2, random_state=42):
     """
@@ -84,10 +89,10 @@ def prepare_data_part3(df, test_size=0.2, random_state=42):
         random_state: Random seed for reproducibility
         
     Returns:
-        X_train, X_test, y_train, y_test
+        X_train, X_test, y_train, y_test, encoder (OneHotEncoder)
     """
     # 1. Encode categorical features
-    df_encoded = encode_categorical_features(df, column_to_encode='smoker_status')
+    df_encoded, encoder = encode_categorical_features(df, column_to_encode='smoker_status', return_encoder=True)
     
     # 2. Select relevant features (including the one-hot encoded ones)
     # Base features from previous parts
@@ -114,7 +119,7 @@ def prepare_data_part3(df, test_size=0.2, random_state=42):
     print(f"Features: {', '.join(all_features)}")
     print(f"Target distribution - Training: {np.bincount(y_train)}, Testing: {np.bincount(y_test)}")
     
-    return X_train, X_test, y_train, y_test
+    return X_train, X_test, y_train, y_test, encoder
 
 def apply_smote(X_train, y_train, random_state=42):
     """
@@ -305,7 +310,7 @@ if __name__ == "__main__":
     df = load_data(data_file)
     
     # 2. Prepare data with categorical encoding
-    X_train, X_test, y_train, y_test = prepare_data_part3(df)
+    X_train, X_test, y_train, y_test, encoder = prepare_data_part3(df)
     
     # 3. Apply SMOTE to balance the training data
     X_train_resampled, y_train_resampled = apply_smote(X_train, y_train)
